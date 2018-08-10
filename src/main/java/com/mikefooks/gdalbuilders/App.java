@@ -12,15 +12,10 @@ public class App
         srs.SetWellKnownGeogCS("NAD83");
         srs.SetUTM(10, 1);
 
-        LayerBuilder layer = new LayerBuilder("some_points")
-            .setGeomType(ogr.wkbPoint)
+        LayerBuilder layer = new LayerBuilder("some_points", ogr.wkbPoint)
             .addField("name", ogr.OFTString)
             .addField("magnitude", ogr.OFTReal);
-
-        FeatureBuilder fb = layer.getFeatureBuilder()
-            .setField("name", "a_point")
-            .setField("magnitude", 3.21);
-
+        
         System.exit(0);
     }
 }

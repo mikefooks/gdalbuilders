@@ -3,6 +3,8 @@ package com.mikefooks.gdalbuilders;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
 import org.gdal.ogr.*;
 import org.gdal.osr.SpatialReference;
 
@@ -11,21 +13,18 @@ public class LayerBuilder
     private FeatureDefn layerDefn;
     private List<Feature> features;
     private String layerName;
+    private FeatureBuilder featureBuilder;
     private int geomType;
 
-    public LayerBuilder (String layerName)
+    public LayerBuilder (String layerName, int geomType)
     {
         this.layerName = layerName;
+        this.geomType = geomType;
         layerDefn = new FeatureDefn();
         features = new LinkedList<>();
+        featureBuilder = new FeatureBuilder();
     }
 
-    public LayerBuilder setGeomType (int geomType)
-    {
-        this.geomType = geomType;
-        return this;
-    }
-    
     public LayerBuilder addField (String name, int fieldType)
     {
         FieldDefn newField = new FieldDefn(name, fieldType);
@@ -39,8 +38,47 @@ public class LayerBuilder
         return shp.getLayer();
     }
 
-    public FeatureBuilder getFeatureBuilder () {
-        return new FeatureBuilder(geomType, layerDefn);
+    class FeatureBuilder {
+        private SpatialReference srs;
+        private Feature feature;
+        private Geometry geometry;
+        private Map<String, Boolean> fulfilled;
+
+        FeatureBuilder ()
+        {
+            feature = new Feature(layerDefn);
+            geometry =  new Geometry(geomType);
+            fulfilled = new HashMap<>();
+
+            String[] keys = { "srs", "geometry", "fields" };
+            for (String key: keys) {
+                fulfilled.put(key, false);
+            }
+        }
+
+        FeatureBuilder setField (String fieldName, Object value)
+        {
+            Class valClass = value.getClass();
+        
+            if ( valClass == String.class) {
+                feature.SetField(fieldName, (String) value);
+            } else if (valClass == Double.class) {
+                feature.SetField(fieldName, (Double) value);
+            }
+
+            return this;
+        }
+        
+        Geometry getGeometry ()
+        {
+            return geometry;
+        }
+
+        void build ()
+        {
+            feature.SetGeometry(geometry);
+            features.add(feature);
+        }
     }
 }
 
@@ -70,43 +108,4 @@ class ShpBuilder {
     }
 }
 
-class FeatureBuilder {
-    private SpatialReference srs;
-    private Feature feature;
-    private Geometry geometry;
 
-    FeatureBuilder (int geomType, FeatureDefn featureDefn)
-    {
-        feature = new Feature(featureDefn);
-        geometry =  new Geometry(geomType);
-    }
-
-    void checkType (Object thing)
-    {
-        System.out.println(thing.getClass());
-    }
-
-    FeatureBuilder setField (String fieldName, Object value)
-    {
-        Class valClass = value.getClass();
-        
-        if ( valClass == String.class) {
-            feature.SetField(fieldName, (String) value);
-        } else if (valClass == Double.class) {
-            feature.SetField(fieldName, (Double) value);
-        }
-
-        return this;
-    }        
-
-    Geometry getGeometry ()
-    {
-        return geometry;
-    }
-
-    Feature build ()
-    {
-        feature.SetGeometry(geometry);
-        return feature;
-    }
-}
