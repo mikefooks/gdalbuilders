@@ -13,7 +13,6 @@ public class LayerBuilder
     private FeatureDefn layerDefn;
     private List<Feature> features;
     private String layerName;
-    private FeatureBuilder featureBuilder;
     private int geomType;
 
     public LayerBuilder (String layerName, int geomType)
@@ -22,14 +21,25 @@ public class LayerBuilder
         this.geomType = geomType;
         layerDefn = new FeatureDefn();
         features = new LinkedList<>();
-        featureBuilder = new FeatureBuilder();
     }
 
-    public LayerBuilder addField (String name, int fieldType)
+    public LayerBuilder addField (String name, Integer dataType)
     {
-        FieldDefn newField = new FieldDefn(name, fieldType);
-        layerDefn.AddFieldDefn(newField);
+        FieldDefn newField = new FieldDefn(name, dataType);
+        layerDefn.AddFieldDefn(newField);   
         return this;
+    }
+
+    public boolean addFeature (Map<String, Object> fieldValues,
+                               List<Double[]> points)
+    {
+        FeatureBuilder builder = new FeatureBuilder();
+        fieldValues.forEach((String name, Object value) ->
+                            builder.setField(name, value));
+        points.forEach((Double[] point) -> builder.addPoint(point));
+        builder.build();
+        
+        return true;
     }
 
     public Layer build (String fileName, SpatialReference srs)
@@ -39,24 +49,16 @@ public class LayerBuilder
     }
 
     class FeatureBuilder {
-        private SpatialReference srs;
         private Feature feature;
         private Geometry geometry;
-        private Map<String, Boolean> fulfilled;
 
         FeatureBuilder ()
         {
             feature = new Feature(layerDefn);
-            geometry =  new Geometry(geomType);
-            fulfilled = new HashMap<>();
-
-            String[] keys = { "srs", "geometry", "fields" };
-            for (String key: keys) {
-                fulfilled.put(key, false);
-            }
+            geometry =  new Geometry(geomType);            
         }
 
-        FeatureBuilder setField (String fieldName, Object value)
+        void setField (String fieldName, Object value)
         {
             Class valClass = value.getClass();
         
@@ -65,15 +67,13 @@ public class LayerBuilder
             } else if (valClass == Double.class) {
                 feature.SetField(fieldName, (Double) value);
             }
+        }
 
-            return this;
+        void addPoint (Double[] point)
+        {
+            geometry.AddPoint(point[0], point[1]);
         }
         
-        Geometry getGeometry ()
-        {
-            return geometry;
-        }
-
         void build ()
         {
             feature.SetGeometry(geometry);
@@ -107,5 +107,3 @@ class ShpBuilder {
         ds.delete();
     }
 }
-
-
