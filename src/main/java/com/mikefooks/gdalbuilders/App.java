@@ -28,6 +28,7 @@ public class App
         location.add(new Double[] { 473077.0, 5363359.0 });
 
         layer.addFeature(values, location);
+        layer.writeOut("/home/mike/gis/data/one_point.shp", srs);
         
         System.exit(0);
     }

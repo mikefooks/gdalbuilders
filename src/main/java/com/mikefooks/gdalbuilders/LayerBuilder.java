@@ -12,6 +12,7 @@ public class LayerBuilder
 {
     private FeatureDefn layerDefn;
     private List<Feature> features;
+    private List<FieldDefn> fields;
     private String layerName;
     private int geomType;
 
@@ -21,12 +22,14 @@ public class LayerBuilder
         this.geomType = geomType;
         layerDefn = new FeatureDefn();
         features = new LinkedList<>();
+        fields = new LinkedList<>();
     }
 
     public LayerBuilder addField (String name, Integer dataType)
     {
         FieldDefn newField = new FieldDefn(name, dataType);
-        layerDefn.AddFieldDefn(newField);   
+        layerDefn.AddFieldDefn(newField);
+        fields.add(newField);
         return this;
     }
 
@@ -42,10 +45,14 @@ public class LayerBuilder
         return true;
     }
 
-    public Layer build (String fileName, SpatialReference srs)
+    public void writeOut (String fileName, SpatialReference srs)
     {
-        ShpBuilder shp = new ShpBuilder(fileName, layerName, srs);
-        return shp.getLayer();
+        ShpBuilder shp = new ShpBuilder(fileName,
+                                        layerName,
+                                        features,
+                                        fields,
+                                        srs);
+        shp.syncAndRelease();
     }
 
     class FeatureBuilder {
@@ -55,7 +62,7 @@ public class LayerBuilder
         FeatureBuilder ()
         {
             feature = new Feature(layerDefn);
-            geometry =  new Geometry(geomType);            
+            geometry =  new Geometry(geomType);
         }
 
         void setField (String fieldName, Object value)
@@ -90,12 +97,16 @@ class ShpBuilder {
 
     ShpBuilder (String fileName,
                 String layerName,
+                List<Feature> features,
+                List<FieldDefn> fields,
                 SpatialReference srs)
     {
         ogr.RegisterAll();
         driver = ogr.GetDriverByName(driverName);
         ds = driver.CreateDataSource(fileName);
         layerOut = ds.CreateLayer(layerName, srs);
+        fields.forEach((field) -> layerOut.CreateField(field));
+        features.forEach((feature) -> layerOut.CreateFeature(feature));
     }
 
     Layer getLayer ()
@@ -103,7 +114,8 @@ class ShpBuilder {
         return layerOut;
     }
             
-    void release () {
+    void syncAndRelease () {
+        ds.SyncToDisk();
         ds.delete();
     }
 }
