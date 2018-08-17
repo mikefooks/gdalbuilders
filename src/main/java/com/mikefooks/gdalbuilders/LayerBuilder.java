@@ -25,6 +25,16 @@ public class LayerBuilder
         fields = new LinkedList<>();
     }
 
+    public int getGeomType ()
+    {
+        return geomType;
+    }
+
+    public String getLayerName ()
+    {
+        return layerName;
+    }
+
     public LayerBuilder addField (String name, Integer dataType)
     {
         FieldDefn newField = new FieldDefn(name, dataType);
