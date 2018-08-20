@@ -6,14 +6,16 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.Assert;
 
-import org.gdal.ogr.ogr;
+import java.util.List;
+
+import org.gdal.ogr.*;
 
 public class LayerBuilderTest
 {
     private LayerBuilder layerBuilder;
 
     @Before
-    public void createLayerBuilder ()
+    public void mockLayerBuilder ()
     {
         layerBuilder = new LayerBuilder("testLayer", ogr.wkbPoint);
     }
@@ -41,4 +43,15 @@ public class LayerBuilderTest
     {
         Assert.assertEquals(ogr.wkbPoint, layerBuilder.getGeomType());        
     }
+    
+    @Test
+    public void addField () {
+        Assert.assertEquals(layerBuilder.getFields().size(), 0);
+        
+        layerBuilder.addField("testField", ogr.OFTReal)
+            .addField("anotherTestField", ogr.OFTString);
+
+        Assert.assertTrue(layerBuilder.getFields() instanceof List<?>);
+        Assert.assertEquals(layerBuilder.getFields().size(), 2);
+    }    
 }
