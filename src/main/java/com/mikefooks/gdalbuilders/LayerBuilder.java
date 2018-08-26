@@ -66,12 +66,17 @@ public class LayerBuilder
     }
 
     public void addFeature (Map<String, Object> fieldValues,
-                               List<Double[]> points)
+                            List<Double[]> points)
     {
         FeatureBuilder builder = new FeatureBuilder(layerDefn, geomType);
         builder.setFields(fieldValues);
         builder.setPoints(points);
         features.add(builder.build());
+    }
+
+    public List<Feature> getFeatures ()
+    {
+        return features;
     }
 
     public void writeOut (String fileName, SpatialReference srs)
