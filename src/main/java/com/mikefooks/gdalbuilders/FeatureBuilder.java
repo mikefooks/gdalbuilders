@@ -20,11 +20,16 @@ class FeatureBuilder {
     void setField (String fieldName, Object value)
     {
         Class valClass = value.getClass();
-        
+
         if ( valClass == String.class) {
             feature.SetField(fieldName, (String) value);
         } else if (valClass == Double.class) {
             feature.SetField(fieldName, (Double) value);
+        } else if (valClass == Integer.class) {
+            feature.SetField(fieldName, (Integer) value);
+        } else {
+            throw new IllegalArgumentException("Value must be one of " +
+                                               "String, Double, or Integer.");
         }
     }
 
@@ -41,6 +46,17 @@ class FeatureBuilder {
     void setPoints (List<Double[]> points)
     {
         points.forEach(this::setPoint);
+    }
+
+    void setPoints (Double[][] points)
+    {
+        for (Double[] point: points)
+            this.setPoint(point);
+    }
+
+    Geometry getGeometry ()
+    {
+        return geometry;
     }
         
     Feature build ()

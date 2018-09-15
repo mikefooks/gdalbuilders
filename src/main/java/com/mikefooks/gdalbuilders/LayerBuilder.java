@@ -74,6 +74,16 @@ public class LayerBuilder
         features.add(builder.build());
     }
 
+    public void addFeature (FeatureBuilder fb)
+    {
+        features.add(fb.build());
+    }
+
+    public FeatureBuilder getFeatureBuilder ()
+    {
+        return new FeatureBuilder(layerDefn, geomType);
+    }
+
     public List<Feature> getFeatures ()
     {
         return features;

@@ -78,4 +78,12 @@ public class LayerBuilderTest
         Assert.assertTrue(layerBuilder.getFeatures() instanceof List<?>);
         Assert.assertEquals(layerBuilder.getFeatures().size(), 1);
     }
+
+    @Test
+    public void getFeatureBuilder ()
+    {
+        FeatureBuilder fb = layerBuilder.getFeatureBuilder();
+
+        Assert.assertEquals(fb.getClass(), FeatureBuilder.class);
+    }   
 }
