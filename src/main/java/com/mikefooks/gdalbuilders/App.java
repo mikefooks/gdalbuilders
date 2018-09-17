@@ -63,21 +63,30 @@ public class App
         */
 
         double[] bounds = { 470903.0, 478151.0, 5361472.0, 5366408.0 };
-        RandomAreas ra = new RandomAreas(bounds, 5, 12);
+        RandomAreas ra = new RandomAreas(bounds, 10, 12);
 
-        System.out.println(ra);
+        String dsName = "/home/mike/gis/data/random_points";
+        LayerBuilder lb = new LayerBuilder("random_points2", ogr.wkbPoint);
+
+        for (Node node: ra.getParentNodes()) {
+            List<Double[]> pointList = new ArrayList<>();
+            pointList.add(new Double[] { node.getX(), node.getY() });
+            lb.addFeature(new HashMap<>(), pointList);
+        }
+        
+        lb.writeOut(dsName, srs);
                 
         System.exit(0);
     }
 }
 
-class RandomAreas implements Iterator
+class RandomAreas
 {
     private RealDistribution parentDist, childrenDist;
     private int nParents, kChildren;
     private double width, height;
     private double[] bounds;
-    private List<Double[]> parentNodes;
+    private List<Node> parentNodes;
     private List<Double[]> childNodes;
 
     /**
@@ -103,8 +112,8 @@ class RandomAreas implements Iterator
     private void _createParentNodes ()
     {
         for (int i = 0; i < nParents; i++)
-            parentNodes.add(new Double[] { _generateParentXSample(),
-                                           _generateParentYSample() });
+            parentNodes.add(new Node(_generateParentXSample(),
+                                     _generateParentYSample()));
     }
 
     private Double _generateParentXSample ()
@@ -117,7 +126,7 @@ class RandomAreas implements Iterator
         return (parentDist.sample() * height) + bounds[2];
     }
 
-    List<Double[]> getParentNodes ()
+    List<Node> getParentNodes ()
     {
         return parentNodes;
     }
@@ -125,9 +134,45 @@ class RandomAreas implements Iterator
     public String toString ()
     {
         String ret = "";
-        for (Double[] node: parentNodes)
-            ret += String.format("%f, %f\n", node[0], node[1]);
+        for (Node node: parentNodes)
+            ret += String.format("%f, %f\n", node.getX(), node.getY());
         
         return ret;
     }
+}
+
+class Node
+{
+    private Node parent;
+    private double x, y;
+    private List<Node> children;
+    private String[] attrNames;
+    private Object[] attrValues;
+    
+    public Node (double x, double y)
+    {
+        this.x = x;
+        this.y = y;
+        children = new ArrayList<>();
+    }
+
+    public boolean hasChildren ()
+    {
+        return children.size() > 0;
+    }
+
+    public double getX ()
+    {
+        return x;
+    }
+
+    public double getY ()
+    {
+        return y;
+    }
+
+    public void addChild (Node child)
+    {
+        children.add(child);
+    }        
 }

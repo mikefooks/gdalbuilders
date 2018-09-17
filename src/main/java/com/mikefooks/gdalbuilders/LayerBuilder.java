@@ -65,13 +65,14 @@ public class LayerBuilder
         return fields;
     }
 
-    public void addFeature (Map<String, Object> fieldValues,
-                            List<Double[]> points)
+    public LayerBuilder addFeature (Map<String, Object> fieldValues,
+                                    List<Double[]> points)
     {
         FeatureBuilder builder = new FeatureBuilder(layerDefn, geomType);
         builder.setFields(fieldValues);
         builder.setPoints(points);
         features.add(builder.build());
+        return this;
     }
 
     public void addFeature (FeatureBuilder fb)
@@ -89,6 +90,7 @@ public class LayerBuilder
         return features;
     }
 
+    // TODO: check if shapefile already exists.
     public void writeOut (String fileName, SpatialReference srs)
     {
         ShpBuilder shp = new ShpBuilder(fileName,
